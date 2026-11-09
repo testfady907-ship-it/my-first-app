@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#23715a">
+  <meta name="description" content="قائمة مهام بسيطة لتنظيم يومك، تحفظ مهامك في متصفحك تلقائيًا.">
+  <title>مهامي — خطوة بخطوة</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="./"><span class="brand-icon" aria-hidden="true">✓</span> مهامي</a><span class="tagline">مساحة صغيرة ليومٍ أكثر ترتيبًا</span></header>
+  <main>
+    <section class="intro" aria-labelledby="page-title">
+      <span class="eyebrow">خطوة بخطوة</span>
+      <h1 id="page-title">كل إنجاز يبدأ بمهمة.</h1>
+      <p>أفرغ أفكارك هنا، وخذ يومك مهمةً تلو الأخرى.</p>
+    </section>
+    <section class="card" aria-label="قائمة المهام">
+      <form id="task-form" novalidate>
+        <label for="task-input">ما الذي تريد إنجازه؟</label>
+        <div class="input-row"><input id="task-input" name="task" type="text" placeholder="اكتب مهمة جديدة…" maxlength="300" autocomplete="off" aria-describedby="form-error"><button class="add-button" type="submit"><span aria-hidden="true">＋</span> إضافة</button></div>
+        <p id="form-error" class="error" role="alert" hidden></p>
+      </form>
+      <div class="list-heading"><h2>قائمة مهامك</h2><span id="remaining" class="count" role="status" aria-live="polite">المهام المتبقية: ٠</span></div>
+      <ul id="task-list" aria-label="المهام"></ul>
+      <div id="empty-state" class="empty-state"><span class="empty-icon" aria-hidden="true">✓</span><h3>بداية هادئة، وإنجازات قادمة</h3><p>أضف أول مهمة، ولنبدأ بخطوة بسيطة.</p></div>
+      <div class="card-footer"><span class="status-dot" aria-hidden="true"></span><span id="storage-status" role="status">تُحفظ مهامك تلقائيًا في هذا المتصفح</span></div>
+    </section>
+    <p class="tip">القليل المستمر يصنع فرقًا كبيرًا.</p>
+  </main>
+  <footer class="page-footer">يومك، على مهل.</footer>
+</body>
+</html>

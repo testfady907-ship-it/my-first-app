@@ -8,6 +8,12 @@ const list = document.querySelector('#task-list');
 const remaining = document.querySelector('#remaining');
 const emptyState = document.querySelector('#empty-state');
 const storageStatus = document.querySelector('#storage-status');
+const dueInput = document.querySelector('#task-due');
+const dueAlert = document.querySelector('#due-alert');
+const notificationButton = document.querySelector('#enable-notifications');
+const notificationStatus = document.querySelector('#notification-status');
+const dateFormat = new Intl.DateTimeFormat('ar', { dateStyle: 'medium', timeStyle: 'short' });
+let dueViews = [];
 const number = new Intl.NumberFormat('ar', { numberingSystem: 'arab' });
 let tasks = loadTasks();
 
@@ -34,6 +40,7 @@ function saveTasks() {
 
 function render() {
   list.replaceChildren();
+  dueViews = [];
   for (const task of tasks) {
     const item = document.createElement('li');
     item.classList.toggle('completed', task.completed);
@@ -47,6 +54,7 @@ function render() {
       item.classList.toggle('completed', task.completed);
       saveTasks();
       updateCount();
+      checkReminders();
     });
     const text = document.createElement('span');
     text.className = 'task-text';
@@ -68,11 +76,37 @@ function render() {
       if (next) next.querySelector('.delete-button').focus();
       else input.focus();
     });
-    item.append(label, remove);
+    const content = document.createElement('div');
+    content.className = 'task-content';
+    content.append(label);
+    const dueLabel = document.createElement('span');
+    dueLabel.className = 'due-label';
+    const schedule = document.createElement('div');
+    schedule.className = 'task-schedule';
+    const scheduleLabel = document.createElement('label');
+    const dateInput = document.createElement('input');
+    dateInput.type = 'datetime-local';
+    dateInput.id = `due-${dueViews.length}`;
+    dateInput.value = validDue(task.due) ? task.due : '';
+    scheduleLabel.htmlFor = dateInput.id;
+    scheduleLabel.textContent = 'موعد التذكير';
+    dateInput.setAttribute('aria-label', `موعد تذكير المهمة: ${task.text}`);
+    dateInput.addEventListener('change', () => {
+      if (dateInput.value && !validDue(dateInput.value)) return;
+      task.due = dateInput.value || null;
+      task.notifiedFor = null;
+      saveTasks();
+      checkReminders();
+    });
+    schedule.append(scheduleLabel, dateInput);
+    content.append(dueLabel, schedule);
+    dueViews.push({task, item, dueLabel});
+    item.append(content, remove);
     list.append(item);
   }
   emptyState.hidden = tasks.length > 0;
   updateCount();
+  checkReminders();
 }
 
 function updateCount() {
@@ -89,7 +123,13 @@ form.addEventListener('submit', event => {
     input.focus();
     return;
   }
-  tasks.push({ id: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`, text, completed: false });
+  if (dueInput.value && !validDue(dueInput.value)) {
+    error.textContent = 'اختر تاريخًا ووقتًا صحيحين.';
+    error.hidden = false;
+    dueInput.focus();
+    return;
+  }
+  tasks.push({ id: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`, text, completed: false, due: dueInput.value || null, notifiedFor: null });
   saveTasks();
   render();
   form.reset();
@@ -102,4 +142,57 @@ function clearError() {
   input.removeAttribute('aria-invalid');
 }
 input.addEventListener('input', clearError);
+function validDue(value) {
+  return typeof value === 'string' && value.length > 0 && Number.isFinite(new Date(value).getTime());
+}
+
+function checkReminders() {
+  const now = Date.now();
+  const dueTasks = [];
+  let changed = false;
+  for (const {task, item, dueLabel} of dueViews) {
+    const hasDue = validDue(task.due);
+    const isDue = hasDue && !task.completed && new Date(task.due).getTime() <= now;
+    item.classList.toggle('overdue', isDue);
+    dueLabel.hidden = !hasDue;
+    dueLabel.textContent = hasDue ? `${task.completed ? 'الموعد' : isDue ? 'حان موعدها' : 'تذكير في'}: ${dateFormat.format(new Date(task.due))}` : '';
+    if (!isDue) continue;
+    dueTasks.push(task);
+    if (task.notifiedFor === task.due) continue;
+    if ('Notification' in globalThis && Notification.permission === 'granted') {
+      try {
+        new Notification('مهامي — حان موعد المهمة', {body: task.text, tag: `task-${task.id}`});
+        task.notifiedFor = task.due;
+        changed = true;
+      } catch {
+        notificationStatus.textContent = 'إشعارات النظام غير متاحة هنا؛ ستظهر التذكيرات داخل التطبيق.';
+      }
+    }
+  }
+  const message = dueTasks.length ? `حان موعد ${number.format(dueTasks.length)} من مهامك: ${dueTasks.map(task => task.text).join('، ')}` : '';
+  dueAlert.hidden = !message;
+  if (dueAlert.textContent !== message) dueAlert.textContent = message;
+  if (changed) saveTasks();
+}
+
+function updateNotificationStatus() {
+  const supported = 'Notification' in globalThis;
+  const permission = supported ? Notification.permission : 'unsupported';
+  notificationButton.disabled = !supported || permission === 'granted' || permission === 'denied';
+  notificationStatus.textContent = permission === 'granted' ? 'إشعارات المتصفح مفعّلة. يعمل التذكير أثناء فتح التطبيق.' : permission === 'denied' ? 'الإشعارات محظورة. يمكنك السماح بها من إعدادات الموقع؛ التذكير داخل التطبيق يعمل.' : !supported ? 'هذا المتصفح لا يدعم إشعارات النظام؛ التذكير داخل التطبيق يعمل.' : 'يمكنك تفعيل الإشعارات أو الاكتفاء بالتذكير داخل التطبيق.';
+}
+notificationButton.addEventListener('click', async () => {
+  try {
+    await Notification.requestPermission();
+    updateNotificationStatus();
+    checkReminders();
+  } catch {
+    notificationStatus.textContent = 'تعذّر تفعيل الإشعارات؛ التذكير داخل التطبيق يعمل.';
+  }
+});
+updateNotificationStatus();
 render();
+setInterval(checkReminders, 10000);
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) checkReminders();
+});

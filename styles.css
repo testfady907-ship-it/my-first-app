@@ -48,6 +48,9 @@ input[type=datetime-local] { display: block; width: 100%; min-width: 0; max-widt
 .notification-title { display: block; font-size: 12px; font-weight: bold; margin-bottom: 11px; }
 .notification-button { min-height: 42px; width: 100%; border: 1px solid #cbdcc9; border-radius: 9px; padding: 9px 12px; color: var(--green); background: #eef4e9; font-size: 11px; font-weight: bold; }
 .notification-button:hover { background: #e5eedf; }
+.sound-controls { display: flex; gap: 7px; margin-top: 12px; flex-wrap: wrap; }
+.sound-controls .notification-button { flex: 1; width: auto; }
+.sound-controls [aria-pressed=true] { background: #246650; color: white; border-color: #246650; }
 .notification-button:disabled { cursor: default; color: #71806c; background: #edf1e8; }
 .reminder-help { font-size: 10px; color: var(--muted); line-height: 1.9; margin: 8px 0 0; }
 .reminder-panel > .reminder-help { grid-column: 1 / -1; margin: 0; padding-top: 12px; border-top: 1px solid #e4eadd; }

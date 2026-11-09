@@ -7,8 +7,8 @@
   <meta name="description" content="قائمة مهام بسيطة لتنظيم يومك، تحفظ مهامك في متصفحك تلقائيًا.">
   <title>مهامي — خطوة بخطوة</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="styles.css?v=3">
-  <script src="app.js?v=3" defer></script>
+  <link rel="stylesheet" href="styles.css?v=4">
+  <script src="app.js?v=4" defer></script>
 </head>
 <body>
   <header class="topbar"><a class="brand" href="./"><span class="brand-icon" aria-hidden="true">✓</span> مهامي</a><span class="tagline">مساحة صغيرة ليومٍ أكثر ترتيبًا</span></header>
@@ -25,7 +25,7 @@
         <div class="input-row"><input id="task-input" name="task" type="text" placeholder="اكتب مهمة جديدة…" maxlength="300" autocomplete="off" aria-describedby="form-error"><button class="add-button" type="submit"><span aria-hidden="true">＋</span> إضافة</button></div>
         <div class="reminder-panel">
           <div class="schedule-field"><label for="task-due">الموعد والتذكير <span>اختياري</span></label><input id="task-due" type="datetime-local" aria-describedby="reminder-help"></div>
-          <div class="notification-settings"><span class="notification-title">لا تفوّت موعدك</span><button id="enable-notifications" class="notification-button" type="button">تفعيل إشعارات المتصفح</button><p id="notification-status" class="reminder-help" role="status"></p></div>
+          <div class="notification-settings"><span class="notification-title">لا تفوّت موعدك</span><button id="enable-notifications" class="notification-button" type="button">تفعيل إشعارات المتصفح</button><p id="notification-status" class="reminder-help" role="status"></p><div class="sound-controls"><button id="toggle-sound" class="notification-button" type="button" aria-pressed="false">تفعيل صوت التذكير</button><button id="test-sound" class="notification-button" type="button" hidden>تجربة الصوت</button></div><p id="sound-status" class="reminder-help" role="status">فعّل الصوت عند فتح الصفحة. اترك التبويب مفتوحًا وغير مكتوم لسماع التذكير.</p></div>
           <p id="reminder-help" class="reminder-help">بتوقيت جهازك · يعمل التذكير أثناء فتح التطبيق، وقد يتأخر أثناء سكون الجهاز.</p>
         </div>
         <p id="form-error" class="error" role="alert" hidden></p>

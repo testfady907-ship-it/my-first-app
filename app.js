@@ -12,6 +12,11 @@ const dueInput = document.querySelector('#task-due');
 const dueAlert = document.querySelector('#due-alert');
 const notificationButton = document.querySelector('#enable-notifications');
 const notificationStatus = document.querySelector('#notification-status');
+const soundButton = document.querySelector('#toggle-sound');
+const testSoundButton = document.querySelector('#test-sound');
+const soundStatus = document.querySelector('#sound-status');
+let audioContext = null;
+let soundEnabled = false;
 const dateFormat = new Intl.DateTimeFormat('ar', { dateStyle: 'medium', timeStyle: 'short' });
 let dueViews = [];
 const number = new Intl.NumberFormat('ar', { numberingSystem: 'arab' });
@@ -95,6 +100,7 @@ function render() {
       if (dateInput.value && !validDue(dateInput.value)) return;
       task.due = dateInput.value || null;
       task.notifiedFor = null;
+      task.soundedFor = null;
       saveTasks();
       checkReminders();
     });
@@ -149,6 +155,7 @@ function validDue(value) {
 function checkReminders() {
   const now = Date.now();
   const dueTasks = [];
+  const soundTasks = [];
   let changed = false;
   for (const {task, item, dueLabel} of dueViews) {
     const hasDue = validDue(task.due);
@@ -158,6 +165,7 @@ function checkReminders() {
     dueLabel.textContent = hasDue ? `${task.completed ? 'الموعد' : isDue ? 'حان موعدها' : 'تذكير في'}: ${dateFormat.format(new Date(task.due))}` : '';
     if (!isDue) continue;
     dueTasks.push(task);
+    if (soundEnabled && task.soundedFor !== task.due) soundTasks.push(task);
     if (task.notifiedFor === task.due) continue;
     if ('Notification' in globalThis && Notification.permission === 'granted') {
       try {
@@ -172,8 +180,73 @@ function checkReminders() {
   const message = dueTasks.length ? `حان موعد ${number.format(dueTasks.length)} من مهامك: ${dueTasks.map(task => task.text).join('، ')}` : '';
   dueAlert.hidden = !message;
   if (dueAlert.textContent !== message) dueAlert.textContent = message;
+  // One chime for tasks becoming due together, independent of notification permission.
+  if (soundTasks.length && playReminderSound()) {
+    for (const task of soundTasks) task.soundedFor = task.due;
+    changed = true;
+  }
   if (changed) saveTasks();
 }
+
+function playReminderSound() {
+  if (!soundEnabled || !audioContext) return false;
+  if (audioContext.state !== 'running') {
+    soundStatus.textContent = 'الصوت متوقف مؤقتًا. اضغط «تجربة الصوت» لإعادة تفعيله.';
+    return false;
+  }
+  try {
+    const start = audioContext.currentTime;
+    [659.25, 880].forEach((frequency, index) => {
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      const time = start + index * 0.24;
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(frequency, time);
+      gain.gain.setValueAtTime(0, time);
+      gain.gain.linearRampToValueAtTime(0.16, time + 0.025);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.45);
+      oscillator.connect(gain);
+      gain.connect(audioContext.destination);
+      oscillator.onended = () => { oscillator.disconnect(); gain.disconnect(); };
+      oscillator.start(time);
+      oscillator.stop(time + 0.5);
+    });
+    soundStatus.textContent = 'صوت التذكير مفعّل لهذه الصفحة. تأكد من رفع صوت الجهاز وعدم كتم التبويب.';
+    return true;
+  } catch {
+    soundStatus.textContent = 'تعذّر تشغيل الصوت. جرّب تفعيله مجددًا؛ التذكير المرئي يعمل.';
+    return false;
+  }
+}
+
+async function activateSound() {
+  const AudioContextClass = globalThis.AudioContext || globalThis.webkitAudioContext;
+  if (!AudioContextClass) {
+    soundStatus.textContent = 'هذا المتصفح لا يدعم صوت التذكير. إشعارات التطبيق ما زالت متاحة.';
+    return;
+  }
+  try {
+    if (!audioContext || audioContext.state === 'closed') audioContext = new AudioContextClass();
+    await audioContext.resume();
+    if (audioContext.state !== 'running') throw new Error('Audio is suspended');
+    soundEnabled = true;
+    soundButton.textContent = 'كتم صوت التذكير';
+    soundButton.setAttribute('aria-pressed', 'true');
+    testSoundButton.hidden = false;
+    playReminderSound();
+  } catch {
+    soundStatus.textContent = 'لم يتم تفعيل الصوت. اضغط مجددًا للسماح بتشغيله.';
+  }
+}
+soundButton.addEventListener('click', () => {
+  if (!soundEnabled) return activateSound();
+  soundEnabled = false;
+  soundButton.textContent = 'تفعيل صوت التذكير';
+  soundButton.setAttribute('aria-pressed', 'false');
+  testSoundButton.hidden = true;
+  soundStatus.textContent = 'صوت التذكير مكتوم. الإشعارات والتذكير المرئي يعملان.';
+});
+testSoundButton.addEventListener('click', activateSound);
 
 function updateNotificationStatus() {
   const supported = 'Notification' in globalThis;

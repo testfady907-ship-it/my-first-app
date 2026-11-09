@@ -7,29 +7,31 @@
   <meta name="description" content="قائمة مهام بسيطة لتنظيم يومك، تحفظ مهامك في متصفحك تلقائيًا.">
   <title>مهامي — خطوة بخطوة</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="styles.css">
-  <script src="app.js" defer></script>
+  <link rel="stylesheet" href="styles.css?v=3">
+  <script src="app.js?v=3" defer></script>
 </head>
 <body>
   <header class="topbar"><a class="brand" href="./"><span class="brand-icon" aria-hidden="true">✓</span> مهامي</a><span class="tagline">مساحة صغيرة ليومٍ أكثر ترتيبًا</span></header>
   <main>
     <section class="intro" aria-labelledby="page-title">
-      <span class="eyebrow">خطوة بخطوة</span>
-      <h1 id="page-title">كل إنجاز يبدأ بمهمة.</h1>
-      <p>أفرغ أفكارك هنا، وخذ يومك مهمةً تلو الأخرى.</p>
+      <span class="eyebrow"><span aria-hidden="true">✦</span> مساحة لإنجازاتك اليومية</span>
+      <h1 id="page-title">رتّب يومك، <span>على مهلك.</span></h1>
+      <p>مهمة صغيرة الآن، وخطوة أقرب لما تريد.</p>
     </section>
     <section class="card" aria-label="قائمة المهام">
       <form id="task-form" novalidate>
+        <div class="form-heading"><span class="section-icon" aria-hidden="true">＋</span><div><h2>خطوتك القادمة</h2><p>أضف مهمة واترك لنا تذكيرك بموعدها.</p></div></div>
         <label for="task-input">ما الذي تريد إنجازه؟</label>
         <div class="input-row"><input id="task-input" name="task" type="text" placeholder="اكتب مهمة جديدة…" maxlength="300" autocomplete="off" aria-describedby="form-error"><button class="add-button" type="submit"><span aria-hidden="true">＋</span> إضافة</button></div>
-        <div class="schedule-field"><label for="task-due">الموعد والتذكير <span>(اختياري)</span></label><input id="task-due" type="datetime-local" aria-describedby="reminder-help"></div>
-        <p id="reminder-help" class="reminder-help">حسب توقيت جهازك. اترك التطبيق مفتوحًا ليظهر التذكير عند الموعد؛ قد يتأخر إذا كان الجهاز في وضع السكون.</p>
-        <button id="enable-notifications" class="notification-button" type="button">تفعيل إشعارات المتصفح</button>
-        <p id="notification-status" class="reminder-help" role="status"></p>
+        <div class="reminder-panel">
+          <div class="schedule-field"><label for="task-due">الموعد والتذكير <span>اختياري</span></label><input id="task-due" type="datetime-local" aria-describedby="reminder-help"></div>
+          <div class="notification-settings"><span class="notification-title">لا تفوّت موعدك</span><button id="enable-notifications" class="notification-button" type="button">تفعيل إشعارات المتصفح</button><p id="notification-status" class="reminder-help" role="status"></p></div>
+          <p id="reminder-help" class="reminder-help">بتوقيت جهازك · يعمل التذكير أثناء فتح التطبيق، وقد يتأخر أثناء سكون الجهاز.</p>
+        </div>
         <p id="form-error" class="error" role="alert" hidden></p>
       </form>
       <p id="due-alert" class="due-alert" role="alert" hidden></p>
-      <div class="list-heading"><h2>قائمة مهامك</h2><span id="remaining" class="count" role="status" aria-live="polite">المهام المتبقية: ٠</span></div>
+      <div class="list-heading"><div><span class="section-kicker">مساحة التركيز</span><h2>قائمة مهامك</h2></div><span id="remaining" class="count" role="status" aria-live="polite">المهام المتبقية: ٠</span></div>
       <ul id="task-list" aria-label="المهام"></ul>
       <div id="empty-state" class="empty-state"><span class="empty-icon" aria-hidden="true">✓</span><h3>بداية هادئة، وإنجازات قادمة</h3><p>أضف أول مهمة، ولنبدأ بخطوة بسيطة.</p></div>
       <div class="card-footer"><span class="status-dot" aria-hidden="true"></span><span id="storage-status" role="status">تُحفظ مهامك تلقائيًا في هذا المتصفح</span></div>
